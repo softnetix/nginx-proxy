@@ -1,0 +1,35 @@
+# Truncates logs when they reach 1000M threshold
+/usr/local/openresty/nginx/logs/sftp_read_external.access.log
+/usr/local/openresty/nginx/logs/*providers.access.log {
+    size 1000M
+    missingok
+    rotate 0
+    notifempty
+
+    # Truncate file before copying it
+    # We don't need access logs so we can just truncate them
+    # We do it to avoid extra disk space usage by copytruncate
+    prerotate
+        truncate --size=0 $1
+    endscript
+
+    # We need it for logrotate to not remove our file so we can keep writing logs
+    copytruncate
+
+    # Logrotate leaves copy (empty) with postfix .1 created after 'copytruncate', we simply remove it
+    postrotate
+        rm $1.1
+    endscript
+}
+
+# Keeps 4 weeks worth of logs
+# Truncates file and compresses it in-place
+/usr/local/openresty/nginx/logs/*.log {
+    weekly
+    missingok
+    rotate 4
+    notifempty
+
+    copytruncate
+    compress
+}
