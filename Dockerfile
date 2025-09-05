@@ -12,6 +12,13 @@ RUN luarocks install lua-resty-jit-uuid 0.0.7-2 && \
 COPY healthcheck.sh /bin/healthcheck.sh
 RUN chmod +x /bin/healthcheck.sh
 
+RUN rm -rf /usr/local/openresty/nginx/html \
+    && rm -f /usr/local/openresty/nginx/conf/nginx.conf.default \
+    && rm -rf /etc/nginx/conf.d/*
+
+COPY html /usr/local/openresty/nginx/html
+COPY nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+
 COPY --chmod=644 logrotate/nginx /etc/logrotate.d/nginx
 
 RUN mkdir -p /data/nginx/cache
@@ -19,3 +26,5 @@ RUN mkdir -p /data/nginx/cache
 RUN mv /etc/cron.daily/logrotate /etc/cron.hourly/logrotate
 
 EXPOSE 80
+
+CMD ["openresty", "-g", "daemon off;", "-c", "/usr/local/openresty/nginx/conf/nginx.conf"]
