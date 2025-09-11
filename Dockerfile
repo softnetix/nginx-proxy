@@ -25,6 +25,12 @@ RUN mkdir -p /data/nginx/cache
 
 RUN mv /etc/cron.daily/logrotate /etc/cron.hourly/logrotate
 
+COPY reload-watcher.sh /usr/local/openresty/
+RUN chmod +x /usr/local/openresty/reload-watcher.sh
+
+COPY start.sh /usr/local/bin/start.sh
+RUN chmod +x /usr/local/bin/start.sh
+
 EXPOSE 80
 
-CMD ["openresty", "-g", "daemon off;", "-c", "/usr/local/openresty/nginx/conf/nginx.conf"]
+CMD ["/usr/local/bin/start.sh"]
