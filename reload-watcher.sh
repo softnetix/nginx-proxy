@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 # How it works:
@@ -36,7 +36,6 @@ reload_nginx() {
 log "Watching $RELOAD_NEEDED_FLAG_DIR"
 
 # Watch for changes in RELOAD_NEEDED_FLAG_DIR
-inotifywait -m -r -e moved_to --format '%w%f %e' "$RELOAD_NEEDED_FLAG_DIR" |
 while read -r FILE EVENT; do
     BASENAME=$(basename "$FILE")
     # Ignore hidden/temp files
@@ -47,4 +46,4 @@ while read -r FILE EVENT; do
     log "$EVENT: $FILE"
 
     reload_nginx
-done
+done < <(inotifywait -m -r -e moved_to --format '%w%f %e' "$RELOAD_NEEDED_FLAG_DIR")
