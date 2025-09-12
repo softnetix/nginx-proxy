@@ -2,9 +2,10 @@
 set -e
 
 # How it works:
-# 1. Any file event triggers the EVENT_PENDING flag.
-# 2. If more than THROTTLE seconds have passed since the last reload, the reload is performed immediately.
-# 3. If it is less, watcher waits until the required interval has passed, and makes one reload for all accumulated events.
+# 1. Starts a background heartbeat loop that updates $HEARTBEAT_FILE every 5 seconds (for health checks)
+# 2. Uses inotifywait to watch recursively for "moved_to" events within the flag directory. Hidden/temporary files are ignored.
+# Other processes can atomically signal a reload by moving a file into this directory
+# 3. On every valid event, immediately runs "openresty -s reload"
 
 RELOAD_NEEDED_FLAG_DIR="/usr/local/openresty/nginx/conf/reload"
 mkdir -p "$RELOAD_NEEDED_FLAG_DIR"
@@ -20,7 +21,7 @@ HEARTBEAT_FILE="/tmp/nginx-watcher.heartbeat"
 ) &
 
 log() {
-    echo "$(date '+%Y/%m/%d %H:%M:%S') - [watcher] $1"
+    echo "$(date '+%Y/%m/%d %H:%M:%S') - [watcher] $1" >&2
 }
 
 reload_nginx() {
