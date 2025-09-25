@@ -10,6 +10,8 @@ set -e
 RELOAD_NEEDED_FLAG_DIR="/usr/local/openresty/nginx/conf/reload"
 mkdir -p "$RELOAD_NEEDED_FLAG_DIR"
 
+SYNC_NEEDED_FILE="/usr/local/openresty/nginx/conf/sync/sync-needed"
+
 HEARTBEAT_FILE="/tmp/nginx-watcher.heartbeat"
 
 # daemon process for healthcheck
@@ -28,6 +30,15 @@ reload_nginx() {
     log "Reloading Nginx..."
 
     openresty -s reload
+
+    sleep 8
+
+    if [ -e "$SYNC_NEEDED_FILE" ]; then
+        rm -f "$SYNC_NEEDED_FILE"
+        log "Removed: $SYNC_NEEDED_FILE"
+    else
+        log "File not found: $SYNC_NEEDED_FILE"
+    fi
 
     log "Nginx reloaded successfully"
 }
